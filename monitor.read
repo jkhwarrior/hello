@@ -1,0 +1,78 @@
+Toggle External monitor
+
+This script toggle between an external monitor (specified by $extern)
+and a defautl monitor (specified by $intern)
+so that only one monitor is active at a time
+
+The default monitor  should beconnected when running the script,which is always true for a laptop.
+
+#!/bin/bash
+intern=LVDS1
+extern=VGA1
+
+if xrandr | grep "$extern disconnected"; then
+    xrandr --output "$extern" --off --output "$intern" --auto
+else
+    xrandr --output "$intern" --off --output "$extern" --auto
+fi
+
+
+
+##############################
+Note: To leave the default monitor enabled when an external monitor is connected, replace the else clause with xrandr --output "$intern" --primary --auto --output "$extern" --right-of "$intern" --auto.
+############################3
+This script iterates through connected monitors, selects currently active monitor, turns next one on and the others off: 
+
+# get info from xrandr
+connectedOutputs=$(xrandr | grep " connected" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+activeOutput=$(xrandr | grep -E " connected (primary )?[1-9]+" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+
+# initialize variables
+execute="xrandr "
+default="xrandr "
+i=1
+switch=0
+
+for display in $connectedOutputs
+do
+	# build default configuration
+	if [ $i -eq 1 ]
+	then
+		default=$default"--output $display --auto "
+	else
+		default=$default"--output $display --off "
+	fi
+
+	# build "switching" configuration
+	if [ $switch -eq 1 ]
+	then
+		execute=$execute"--output $display --auto "
+		switch=0
+	else
+		execute=$execute"--output $display --off "
+	fi
+
+	# check whether the next output should be switched on
+	if [ $display = $activeOutput ]
+	then
+		switch=1
+	fi
+
+	i=$(( $i + 1 ))
+done
+
+# check if the default setup needs to be executed then run it
+echo "Resulting Configuration:"
+if [ -z "$(echo $execute | grep "auto")" ]
+then
+	echo "Command: $default"
+	`$default`
+else
+	echo "Command: $execute"
+	`$execute`
+fi
+echo -e "\n$(xrandr)"
+
+
+
+

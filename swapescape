@@ -1,0 +1,12 @@
+To make it work on startup you can put it in ~/.profile
+this will run it after the ineractive login
+
+if switch does not persist between login you can also
+put it in .xinitrc file
+
+*******************
+Command below 
+*******************
+
+/usr/bin/setxkbmap -option caps:swapescape
+

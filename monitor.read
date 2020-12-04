@@ -3,7 +3,9 @@ Toggle External monitor
 This script toggle between an external monitor (specified by $extern)
 and a defautl monitor (specified by $intern)
 so that only one monitor is active at a time
-
+------------------------
+some dummy text here 
+----------------------
 The default monitor  should beconnected when running the script,which is always true for a laptop.
 
 #!/bin/bash

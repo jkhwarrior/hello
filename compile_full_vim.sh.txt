@@ -1,0 +1,89 @@
+#! /bin/bash
+
+# Description:
+#   Compile a full-featured Vim from source on Ubuntu/Debian distros. Based
+#   entirely on
+#   https://github.com/Valloric/YouCompleteMe/wiki/Building-Vim-from-source
+#
+# Use:
+#   ./compile_full_vim.sh
+
+main(){
+	echo "y" | sudo apt-get remove \
+		vim \
+		vim-runtime \
+		gvim \
+		vim-tiny \
+		vim-common \
+		vim-gui-common
+	echo "y" | sudo apt-get install \
+		libncurses5-dev \
+		libgnome2-dev \
+		libgnomeui-dev \
+		libgtk2.0-dev \
+		libatk1.0-dev \
+		libbonoboui2-dev \
+		libcairo2-dev \
+		libx11-dev \
+		libxpm-dev \
+		libxt-dev \
+		python-dev ruby-dev \
+		mercurial
+
+	cd ~
+	git clone git@github.com:vim/vim.git --depth=1
+	cd vim
+	./configure --with-features=huge \
+		--enable-multibyte \
+		--enable-rubyinterp \
+		--enable-pythoninterp \
+		--with-python-config-dir=/usr/lib/python2.7/config \
+		--enable-perlinterp \
+		--enable-luainterp \
+		--enable-gui=gtk2 \
+		--enable-cscope \
+		--prefix=/usr
+	make VIMRUNTIMEDIR=/usr/share/vim/vim74
+	sudo make install
+}
+
+main
+##################################
+If you want to be able to easily uninstall vim use checkinstall.
+
+sudo apt install checkinstall
+cd ~/vim
+sudo checkinstall
+Otherwise, you can use make to install.
+
+cd ~/vim
+sudo make install
+
+sudo update-alternatives --install /usr/bin/editor editor /usr/local/bin/vim 1
+sudo update-alternatives --set editor /usr/local/bin/vim
+sudo update-alternatives --install /usr/bin/vi vi /usr/local/bin/vim 1
+sudo update-alternatives --set vi /usr/local/bin/vim
+
+ Double check that you are in fact running the new Vim binary by looking at
+the output of vim --version.
+
+If you don't get gvim working (on ubuntu 12.04.1 LTS), try changing --enable-gui=gtk2 to --enable-gui=gnome2
+
+If you have problems, double check that you configured using the correct Python config directory, as noted at the beginning of Step 3.
+
+These configure and make calls assume a Debian-like distro where Vim's runtime files directory is placed in /usr/share/vim/vim80/, which is not Vim's default. Same thing goes for --prefix=/usr in the configure call. Those values may need to be different with a Linux distro that is not based on Debian. In such a case, try to remove the --prefix variable in the configure call and the VIMRUNTIMEDIR in the make call (in other words, go with the defaults).
+
+if when compiling you get this kind of error 
+While installing Vim on Linux through GNOME Terminal (having downloaded the Github repository) this error appears: "warning: ‘GTimeVal’ is deprecated: Use 'GDateTime' instead [-Wdeprecated-declarations]".
+
+The error seems to go into an infinite loop of attempting to continue the install, however it is always halted.
+
+Within the following files, simply put ":%s/GTimeVal/GDateTime/g" in Normal Mode (w/out quotes, obviously); sudo will be required.
+
+/usr/include/glib-2.0/glib/gtypes.h
+/usr/include/gtk-2.0/gtk/gtktooltips.h
+
+While there are more "GTimeVal" variables in files throughout the GTK2 file structure, Vim's install does not seem to touch any more than the preceding two files.
+
+(Or using GTK 3 might be another option.)
+###############################

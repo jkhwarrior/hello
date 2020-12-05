@@ -1,13 +1,22 @@
   set autoread                                                                " Set to auto read when a file is changed from the outside
   set backspace=indent,eol,start                                              " more powerful backspacing
-  set clipboard=unnamed                                                       " access your system clipboard
+  "set clipboard=unnamed                                                       " access your system clipboard
+  "Use clipboard register
+  if has ('unnamedplus')
+    set clipboard& clipboard+=unnamedplus
+  else
+    set clipboard& clipboard+=unnamed
+  endif
+
   set cmdheight=2                                                             " Height of the command bar
+  set pastetoggle=<F12>                                                       " Paste mode toggle
   syntax enable                                                               " enable syntax highlighting and plugin (for netrw)
   set encoding=utf8                                                           " Set utf8 as standard encoding and en_US as the standard language
   set expandtab                                                               " convert tabs into spaces
   set ffs=unix,dos,mac                                                        " Use Unix as the standard file type
   set foldmethod=indent                                                       " Code folding
   set foldlevel=99
+  set autoindent smartindent
   set history=500                                                             " Sets how many lines of history VIM has to remember
   set incsearch                                                               " incremental search
   set laststatus=2                                                            " Always show the status line
@@ -16,7 +25,7 @@
   set mouse=nicr
   set magic                                                                   " For regular expressions turn magic on
   set nocompatible                                                            " enter the current millenium
-  set number                                                                  " always show line numbers
+  set number relativenumber                                                   " Show number and relativenumber 
   set hidden
   set ruler                                                                   " Always show current position
   set scrolloff=7                                                             " when scrolling, keep cursor 3 lines away from screen border
@@ -25,23 +34,25 @@
   set synmaxcol=200                                                           " performance ???
   set tabstop=2                                                               " press tab, 2 spaces forward, 1 tab == 2 spaces
   set wrap                                                                    " Wrap lines
+  set shortmess=aTi                                                           " Do not display greeting message at vim startup
+  set infercase                                                               " Ignore case on insert completion
   filetype plugin indent on
   let mapleader = ","
   let maplocalleader = ","
   set termguicolors
   " Toggle line numbers
-  nnoremap <leader>N :setlocal number!<cr> 
+  nnoremap <leader>N :setlocal number!<CR> 
 
   " comma+s to save, comma+q to quit (does not save!), quit all without saving
-  nnoremap <leader>ss :w<cr>
-  nnoremap <leader>q :q!<cr>
-  nnoremap <leader>qa :qa!<cr>
+  nnoremap <leader>ss :w<CR>
+  nnoremap <leader>q :q!<CR>
+  nnoremap <leader>qa :qa!<CR>
 
   let $MYVIMRC="/home/debian/.vimrc"
   " Reload vimrc
-  nnoremap <leader>rv :source<Space>$MYVIMRC<cr>
+  nnoremap <leader>rv :source<Space>$MYVIMRC<CR>
   " Edit vimrc
-  nnoremap <leader>ev :tabnew $MYVIMRC<cr>
+  nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 
   " Copy & paste to clipboard
   noremap <Leader>Y "+y
@@ -59,11 +70,11 @@
   nnoremap <leader> z
 
   " Buffer key mappings
-  nnoremap <leader>l :bn<cr>
-  nnoremap <leader>h :bp<cr>
-  nnoremap <leader>0 :bf<cr>
-  nnoremap <leader>9 :bl<cr>
-  nnoremap <leader>dd :bd<cr>
+  nnoremap <leader>l :bn<CR>
+  nnoremap <leader>h :bp<CR>
+  nnoremap <leader>0 :bf<CR>
+  nnoremap <leader>9 :bl<CR>
+  nnoremap <leader>dd :bd<CR>
 
   " Managing tabs
   nnoremap tn :tabnew<Space>
@@ -88,24 +99,24 @@
   vnoremap > >gv
 
   " comma-1 insert "!" commenting
-  nnoremap <leader>1 :norm i!<cr>
-  vnoremap <leader>1 :norm i!<cr>
+  nnoremap <leader>1 :norm i!<CR>
+  vnoremap <leader>1 :norm i!<CR>
 
   " comma-' insert """ commenting
-  nnoremap <leader>' :norm i"<cr>
-  vnoremap <leader>' :norm i"<cr>
+  nnoremap <leader>' :norm i"<CR>
+  vnoremap <leader>' :norm i"<CR>
 
   " comma-3 insert "#" commenting
-  nnoremap <leader>3 :norm i#<cr>
-  vnoremap <leader>3 :norm i#<cr>
+  nnoremap <leader>3 :norm i#<CR>
+  vnoremap <leader>3 :norm i#<CR>
 
   " comma-- insert "--" commenting
-  nnoremap <leader>- :norm i--<cr>
-  vnoremap <leader>- :norm i--<cr>
+  nnoremap <leader>- :norm i--<CR>
+  vnoremap <leader>- :norm i--<CR>
 
   " comma-6 uncomment
-  nnoremap <leader>6 :norm ^x<cr>
-  vnoremap <leader>6 :norm ^x<cr>
+  nnoremap <leader>6 :norm ^x<CR>
+  vnoremap <leader>6 :norm ^x<CR>
 
   " Make Y yank everything from the cursor to the end of the line. This makes Y
   " act more like C or D because by default, Y yanks the current line (i.e. the
@@ -129,9 +140,14 @@
   set path+=**
 
   " display all matching files when we tab complete
-   set wildmenu
+   set nowildmenu
    set wildmode=list:longest,full
    set lazyredraw
+   set ttyfast
+   set wildoptions=tagfile
+   set showfulltag
+   set completeopt=menu
+   set complete+=k,kspell complete-=w complete-=b complete-=u complete-=t  " Scan files given by directory options "
 
   " NOW WE CAN:
   " - hit tab to :find by partial match
@@ -148,10 +164,14 @@
    let g:netrw_liststyle=3                                 " tree view
    let g:netrw_list_hide=netrw_gitignore#Hide()
    let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
+   let g:netrw_winsize=20 
+   let g:netrw_localrmdir='rm -r'
+   " toggle netrw on the left side of the editor
+   nnoremap <leader>n :Lexplore<CR>
 
   " NOW WE CAN:
   " - :edit a folder to open a file browser
-  " - <CR>/v/t to open in an h-split/v-split/tab
+  " - <CR>/v/t to open in an h-split/v-split/tCRab
   " - check |netrw-browse-maps| for more mappings
   " END FILE BROWSING: *********************************************************
 
@@ -374,32 +394,39 @@
   " Set this to 0 to disable line numbering in the TabMan window
   " let g:tabman_number = 1
   "
-  "
-  " Define custom function keyword
-  function! s:my_cr_function()
-    return (pumvisible() ? "\<C-y>" : "") = '\h\w*'
-    " For no insertion <CR> key.
-    "return pumvisible() ? "\<C-y> : "\<CR>"
-  endfunction
+
+  " When completion menu is shown, use <CR> to select an item
+  " and do not add an annoying newline. Otherwise, <enter> is what it is
+  inoremap <expr> <CR> ((pumvisible()?("\<C-Y>"):("\<CR>")))
+  " Use <ESC> to close auto-completion menu 
+"  inoremap <expr> <ESC> ((pumvisible()?("\<C-e>"):("\<ESC>")))
+  " Use <TAB> to navigate down the completion menu
+  inoremap <expr> <TAB> pumvisible()?"\<C-n>":"\<TAB>"
 
   " Autoclose ------------------------------
   " Fix to let ESC work as espected with Autoclose plugin
   let g:AutoClosePumvisible = {"ENTER": "\<C-Y>", "ESC": "\<ESC>"}
   """""""""""""""""""""""""""""""""""""""""""""
-  "Custom mapping configuration settings"
-  " <CR>: close popup and save indent
-  inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
-  "<TAB>: completion.
-  inoremap <expr><TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
   " Enable omni completion.
   autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
   autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
   autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
   autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
   autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags 
+  autocmd FileType c setlocal omnifunc=ccomplete#Complete
+  autocmd FileType php setlocal omnifunc=phpcomplete#CompletePHP
+  autocmd FileType ruby setlocal omnifunc=rubycomplete#Complete
 
+  " Toggle spell checking
+  nnoremap <silent> <F9> :set spell!<CR>
+  inoremap <silent> <F9> <C-O>:set spell!<CR>
 
+  " Use Esc to quit builtin terminal
+  if exists('tnoremap')
+    tnoremap <ESC> <C-\><C-n>
+  endif
 
+  
   " DragVisuals ------------------------------
   " mappings to move blocks in 4 directions
   vmap <expr> <S-M-LEFT> DVB_Drag('left')

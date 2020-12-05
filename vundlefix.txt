@@ -1,0 +1,15 @@
+for reasons I can't explain I kept getting
+
+Error detected while processing function vundle#end:
+line    1:
+E108: No such variable: "g:vundle_lazy_load
+whenever I opened a file.
+
+The following fixes it.
+
+func! vundle#end(...) abort
+  if (exists("g:vundle_lazy_load"))
+    unlet g:vundle_lazy_load
+  endif
+  call vundle#config#activate_bundles()
+endf

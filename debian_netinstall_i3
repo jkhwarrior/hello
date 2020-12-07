@@ -1,0 +1,245 @@
+Install Debian
+Get the Netinstall ISO from 
+https://www.debian.org/distrib/netinst
+Burn on CD or USB stick and get system ready 
+
+Net-Install does not install WIFI support if you need 
+WIFI Connection check for instruction at the end of this article
+** Boot your PC and choose Graphical install
+** After Installation is compelete reboot into your Minimal Debian Buster system
+
+** Test your internet connection and if theres is no connection go to bottom
+** for more info how to configure your internet connection
+
+Initial configuration of your system
+
+login with root
+** Install sudo and add user to the sudoers group
+** Install vim temporaly will delete this version later 
+** when setting up VIM by compiling from source 
+**
+apt-get install sudo
+apt-get install vim
+
+to set user into sudo group enter the follow commands
+** sudo adduser USERNAME sudo  *** change USERNAME with own
+** in some cases you can add user to /etc/sudoers 
+** USERNAME ALL=(ALL:ALL) ALL
+
+Perhaps a bit reckless but never experienced any issues
+and kind of needed for the latest software and tools
+
+modify /etc/apt/source.list:
+
+deb http://cdn.debian.net/debian/ unstable main non-free contrib
+deb-src http://cdn.debian.net/debian/ unstable main non-free contrib
+After saving the above changes, execute the following:
+
+sudo aptitude update
+sudo aptitude dist-upgrade
+The dist-upgrade step will upgrade all installed packages to whatever’s 
+newest in unstable.
+
+Intel/AMD microcode
+Execute one of the following lines for the maker:
+Intel:
+$ sudo apt-get install intel-microcode
+AMD:
+$ sudo apt-get install amd64-microcode
+Virtual Machine Tools
+If you’re running a VM, install your hypervisor of choice addons to add support.
+VMWare:
+$ sudo apt-get install open-vm-tools open-vm-tools-desktop
+
+
+Install i3wm
+
+We’re getting to the end of this tutorial. To install i3 type:
+
+$ sudo apt-get install i3-wm i3-status xorg lightdm suckless-tools
+
+Display manager
+
+We have three choices for the display manager:
+install lightdm as display manager
+install xdm as display manager
+use xinit
+
+I prefer XDM for its simplicity.
+
+LightDM
+
+
+Execute install and reboot:
+$ sudo apt-get install lightdm
+$ sudo reboot
+
+XDM
+
+Execute install, create .xsession file and reboot:
+
+$ sudo apt-get install xdm
+$ echo ‘exec i3’ > ~/.xsession
+$ sudo reboot
+
+xinit
+
+$ echo ‘exec i3’ > ~/.xsession
+$ startx
+
+Initial i3 config
+When starting i3 asks for the creation of a config file.
+Say yes and then choose the mod key. 
+My preference is the window key since it doesn’t clash with some app’s shortcuts.
+i3’s config file is located at ‘~/.config/i3/config’. 
+Everything i3 related is managed in that file.
+
+More packages
+Browsers
+Firefox
+$ sudo apt-get install firefox-esr
+Chromium
+$ sudo apt-get install chromium
+Terminal emulator
+$ sudo apt-get install gnome-terminal
+Or
+$ sudo apt-get install mate-terminal
+File manager
+$ sudo apt-get install pcmanfm
+Network manager
+If you followed the WiFi instructions, it’s now time to undo those changes. See the end of the article.
+For Wicd:
+$ sudo apt-get install wicd
+You can now run ‘wicd-gtk’
+For Network Manager:
+$ sudo apt-get install network-manager
+You can now run ‘nmtui’
+Printing
+$ sudo apt-get install cups
+Navigate to http://localhost:631 for printer configuration
+Power management
+There several options. I’ll present two.
+xfce4-power-manager
+If you prefer a GUI method go for the ‘xfce4-power-manager’:
+$ sudo apt-get install xfce4-power-manager
+TLP
+If you want to get your hands dirty, messing with conf files go for ‘TLP’:
+$ sudo apt-get install tlp
+After installing it run ‘sudo tlp-stat’ and search the output for other packages suggestions. You can read about TLP here.
+System monitor
+$ sudo apt-get install conky htop
+Sound manager
+$ sudo apt-get install pulseaudio pavucontrol
+Check your status with ‘pactl list sinks’:
+Image for post
+Probably you sink will be muted and the volume will be almost 0. You can change that with:
+$ pactl set-sink-mute 0 false
+$ pactl set-sink-volume @DEFAULT_SINK@ 50%
+Or run ‘pavucontrol’ and use the GUI.
+Multimedia keys
+To control the volume with the multimedia keys we need the ‘xbindkeys’ package. We’ll then use i3’s config file to bind those keys to the volume up, down, mute actions:
+$ sudo apt-get install xbindkeys
+Edit the file ‘~/.config/i3/config’
+$ nano ~/.config/i3/config
+Add these lines:
+bindsym XF86AudioRaiseVolume exec “pactl set-sink-volume @DEFAULT_SINK@ +10%"
+bindsym XF86AudioLowerVolume exec “pactl set-sink-volume @DEFAULT_SINK@ ‘10%”
+bindsym XF86AudioMute exec “pactl set-sink-mute @DEFAULT_SINK@ toggle”
+Press ‘mod’+’shift’+’r’ to reload i3’s config and test your multimedia keys.
+Monitor configuration
+The ‘arandr’ package is a frontend of xrandr for multiple monitors.
+$ sudo apt-get install arandr
+Brightness
+The most crucial step in configuring the screen brightness is getting the graphic card correct firmware. This is usually the most common mistake that results in a ‘No outputs have backlight property’. Make sure the correct firmware is installed and is used.
+To control the screen brightness edit i3’s config file and add the lines:
+# Increase brightness
+bindsym XF86MonBrightnessUp exec “xbacklight -inc 5”
+# Decrease brightness
+bindsym XF86MonBrighnessDown exec “xbacklight -dec 5”
+Restart i3 and test the setup.
+WiFi configuration (extra)
+To get the WiFi to work you’ll need some extra packages that aren’t available after the net installation. Before beginning, make sure you have these files or have a way of getting them to your new Debian installation.
+Get wpasupplicant and dependencies
+First you’ll need the wpasupplicant package. This package has the following dependencies that you’ll need installed: libnl-3–200, libnl-gen-3–200, libnl-route-3–200 and libpcsclite1.
+Get firmware
+Your hardware might also need a package. Execute the following command to determine the driver status:
+# lspci -k
+Search and get the package from this list.
+Install packages
+Transfer all files to an USB stick and plug it in your new system. 
+The following steps need superuser privileges. 
+We’ll determine the device path, create a mount point folder, copy files and install:
+# mkdir /mnt/usb
+# lsblk
+Take note of path (assuming sdb1)
+# mount /dev/sdb1 /mnt/usb
+# cd /mnt/usb
+Now install the packages.
+# dpkg -i package_name
+Reboot.
+Configure WiFi
+Almost finished. Let’s get the interface name (assuming wlan0) and configure the WiFi connection:
+# ip link
+# wpa_passphrase Your_SSID my_very_secret_passphrase
+Take note of the values. Edit the ‘/etc/network/interfaces’ file and add the following lines:
+# nano /etc/network/interfaces
+auto wlan0
+iface wlan0 inet dhcp
+wpa-ssid myssid
+wpa-psk your_calculated_psk
+Bring the interface up and enable DHCP:
+# ifup wlan0
+# dhcpcd wlan0
+These steps should get you an active internet connection. 
+If later you decide to install a network manager (like wicd or nmanager) remember to delete or comment the lines in the ‘/etc/network/interfaces’ file.
+Debian repositories
+When installing your system couldn’t configure the repositories, so let’s do it now. Edit the ‘/etc/apt/sources.list’ file:
+# nano /etc/apt/sources.list
+deb http://deb.debian.org/debian buster main contrib non-free
+deb-src http://deb.debian.org/debian buster main contrib non-free
+deb http://deb.debian.org/debian-security/ busterupdates main contrib non-free
+deb-src http://deb.debian.org/debian-security/ buster/updates main contrib non-free
+deb http://deb.debian.org/debian buster-updates main contrib non-free
+deb-src http://deb.debian.org/debian buster-updates main contrib non-free
+Conclusion
+One of i3’s strongest advantages is the lightweight nature. 
+You have a fully capable system with all its resources available. 
+You can run ‘htop’ and see for yourself how many resources are being used and how many are available:
+
+If you install another terminal, and opening more terminals results in more xterms rather than your installed terminal, do the following to set your preferred option:
+
+$ sudo update-alternatives --config x-terminal-emulator
+Desktop Tweaks
+Before digging too deep into installing additional software, it’s a good time to configure some additional options to make life a bit more pleasant.
+
+Look and Feel
+In order to make sure your eyes are not offended by the default GTK theme which you may end up seeing a lot of, set up the GTK theme and icon theme:
+
+~/.gtkrc-2.0:
+
+include "/usr/share/themes/Adwaita/gtk-2.0/gtkrc"
+gtk-icon-theme-name="Adwaita"
+In addition, I found it a lot cleaner and space-maximising to disable i3’s window titles and thin it’s borders down, by addition the following to ~/i3/config:
+
+new_window 1pixel
+new_float normal
+py3status
+Install python-pip via Aptitude, and then $ sudo pip install py3status. I use py3status since it provides some nice additional modules, is more flexible, and is fully compatible with the default i3status configuration. It’s also a good time to check out the i3status configuration documentation and do some tweaks, since a couple of the default entries here are likely not too useful.
+
+Wallpaper
+Randomised (of fixed if preferred) wallpapers can easily be achieved by installing feh (which makes for a good i3-friendly picture viewer in general) then adding the following to ~/i3/config:
+
+exec --no-startup-id feh --recursive --randomize --bg-fill ~/Pictures/wallpaper/
+Incidentally, the imgur wallpaper gallery is a good place to find some wallpapers.
+
+File Management
+Sometimes a GUI file manager can be useful, and for this, a nice light-weight alternative to the bigger desktops' Nautilus and Dolphins is PCManFM, installed as pcmanfm.
+
+A nice companion application for (compressed) archive management is xarchiver. You may need to install additional tools (such as zip, unzip, unrar-free, etc, depending on the files you commonly work with).
+
+Conclusion
+The entire setup to this point should not have taken more than 1-2 hours, depending on download speeds (really, most time is spent just waiting for downloads…), so you can get this kind of environment running with minimal effort and downtime.
+
+I haven’t included anything about multimedia, custom key bindings, lock screens, or others here, but there are loads of other resources around which can fill you in on those and the myriad ways you can configure your i3 environment.
+
+Your next step, if you’re new to i3, should probably be to take a read through the i3 user guide, which is impressively comprehensive.

@@ -140,7 +140,7 @@
   set path+=**
 
   " display all matching files when we tab complete
-   set nowildmenu
+   set wildmenu
    set wildmode=list:longest,full
    set lazyredraw
    set ttyfast
